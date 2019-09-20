@@ -1,0 +1,301 @@
+CREATE DATABASE
+
+WARNING: Console code page (437) differs from Windows code page (1252)
+         8-bit characters might not work correctly. See psql reference
+         page "Notes for Windows users" for details.
+You are now connected to database "rrp" as user "postgres".
+
+CREATE DATABASE
+
+WARNING: Console code page (437) differs from Windows code page (1252)
+         8-bit characters might not work correctly. See psql reference
+         page "Notes for Windows users" for details.
+You are now connected to database "assignment1" as user "postgres".
+
+QUESTION 1
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE TABLE
+
+sid | sname | rating | age
+-----+-------+--------+-----
+(0 rows)
+
+bid | bname | color
+-----+-------+-------
+(0 rows)
+
+sid | bid | day
+-----+-----+-----
+(0 rows)
+
+INSERT 0 10
+
+INSERT 0 5
+
+INSERT 0 9
+
+ sid |  sname  | rating | age
+-----+---------+--------+-----
+  22 | Dustin  |      7 |  45
+  29 | Brutus  |      1 |  33
+  31 | Lubber  |      8 |  55
+  32 | Andy    |      8 |  25
+  58 | Rusty   |     10 |  35
+  64 | Horatio |      7 |  35
+  71 | Zorba   |     10 |  16
+  74 | Horatio |      9 |  35
+  85 | Art     |      3 |  25
+  95 | Bob     |      3 |  63
+(10 rows)
+
+bid |   bname   | color
+-----+-----------+-------
+ 101 | Interlake | blue
+ 102 | Sunset    | red
+ 103 | Clipper   | green
+ 104 | Marine    | red
+ 105 | SunShine  | blue
+(5 rows)
+
+sid | bid |    day
+-----+-----+-----------
+  22 | 101 | Monday
+  22 | 102 | Tuesday
+  22 | 103 | Wednesday
+  31 | 102 | Thursday
+  31 | 103 | Friday
+  31 | 104 | Saturday
+  64 | 101 | Sunday
+  64 | 102 | Monday
+  74 | 102 | Saturday
+(9 rows)
+
+DROP TABLE
+DROP TABLE
+DROP TABLE
+
+
+--Question2:
+--not null constraint due to primary key does not allow null values in the column, unique constraint due to primary key does not allow dupplicate values:
+--table boat with no primary key constraints 
+CREATE TABLE
+--null values are inserted in Bid column
+INSERT 0 2
+--dupplicate values are inserted in Bid column
+INSERT 0 2
+DROP TABLE
+--table boat with primary key constraints 
+CREATE TABLE
+--the null constraint due to Primary Key does not allow insertion of null values in column Bid:
+ERROR:  null value in column "bid" violates not-null constraint
+DETAIL:  Failing row contains (null, Sunset, red).
+
+--the unique constraint due to Primary Key, does not allow dupplicate values in column Bid:
+ERROR:  duplicate key value violates unique constraint "boat_pkey"
+DETAIL:  Key (bid)=(101) already exists.
+
+DROP TABLE
+
+--table Sailor with no primary key constraints
+CREATE TABLE
+--null values are inserted in Sid column
+INSERT 0 2
+--dupplicate values are inserted in Sid column
+INSERT 0 2
+
+DROP TABLE
+
+--table Sailor with primary key constraints
+CREATE TABLE
+
+--the null constraint due to Primary Key does not allow insertion of null values:
+ERROR:  null value in column "sid" violates not-null constraint
+DETAIL:  Failing row contains (null, Dustin, 7, 45).
+
+--the unique constraint due to Primary Key, does not allow dupplicate values in column Sid:
+ERROR:  duplicate key value violates unique constraint "sailor_pkey"
+DETAIL:  Key (sid)=(29) already exists.
+
+DROP TABLE
+
+--Recreate proper tables
+
+CREATE TABLE
+CREATE TABLE
+INSERT 0 5
+INSERT 0 10
+
+--foreign key constraint- does not allow insertion of values not present in the parent table,does not allow deletion of primary key values in parent table:
+--without foreign key constraint on Sid and Bid, the values are inserted in Sid and Bid:
+CREATE TABLE
+INSERT 0 2
+INSERT 0 2
+DELETE 1
+DROP TABLE
+DROP TABLE
+
+CREATE TABLE
+INSERT 0 5
+
+--table reserves with foreign key constraint
+CREATE TABLE
+
+ERROR:  insert or update on table "reserves" violates foreign key constraint "reserves_sid_fkey"
+DETAIL:  Key (sid)=(2234) is not present in table "sailor".
+INSERT 0 2
+--throws error when deleting row from the referenced parent table:
+ERROR:  update or delete on table "boat" violates foreign key constraint "reserves_bid_fkey" on table "reserves"
+DETAIL:  Key (bid)=(101) is still referenced from table "reserves".
+
+DROP TABLE
+
+--on using cascade however, the deletion from the parent table is allowed:
+CREATE TABLE
+INSERT 0 9
+DELETE 1
+ERROR:  update or delete on table "sailor" violates foreign key constraint "reserves_sid_fkey" on table "reserves"
+DETAIL:  Key (sid)=(22) is still referenced from table "reserves".
+
+DROP TABLE
+
+
+--without foreign key constraint on Bid, values are inserted in Bid but error thrown on Sid which has foreign key defined:
+CREATE TABLE
+INSERT 0 2
+ERROR:  insert or update on table "reserves" violates foreign key constraint "reserves_sid_fkey"
+DETAIL:  Key (sid)=(2234) is not present in table "sailor".
+
+--recreate proper tables
+
+DROP TABLE
+DROP TABLE
+DROP TABLE
+
+CREATE TABLE
+INSERT 0 5
+CREATE TABLE
+INSERT 0 10
+CREATE TABLE
+INSERT 0 9
+
+Question 3 (a)
+   bname
+-----------
+ Clipper
+ Marine
+ Sunset
+ Interlake
+ SunShine
+(5 rows)
+
+--distinct not needed since we sid is primary key and is unique in sailor
+Question 3 (b)
+ sid | rating
+-----+--------
+  22 |      7
+  29 |      1
+  31 |      8
+  32 |      8
+  58 |     10
+  64 |      7
+  71 |     10
+  74 |      9
+  85 |      3
+  95 |      3
+(10 rows)
+
+Question 3 (c)
+ sid | sname  | rating
+-----+--------+--------
+  29 | Brutus |      1
+  58 | Rusty  |     10
+  71 | Zorba  |     10
+  85 | Art    |      3
+  95 | Bob    |      3
+(5 rows)
+
+Question 3 (d)
+--We use distinct because a boat can be reserved with multiple sailors
+ bid | bname
+-----+--------
+ 102 | Sunset
+ 104 | Marine
+(2 rows)
+
+Question 3 (e)
+ bid | bname
+-----+--------
+ 102 | Sunset
+(1 row)
+
+Question 3 (f)
+sid
+-----
+  29
+  32
+  58
+  71
+  74
+  85
+  95
+(7 rows)
+
+Question 3 (g)
+ bid |   bname
+-----+-----------
+ 101 | Interlake
+ 103 | Clipper
+ 102 | Sunset
+(3 rows)
+
+
+Question 3 (h)
+ bid | bid
+-----+-----
+ 101 | 102
+ 101 | 103
+ 102 | 101
+ 102 | 103
+ 102 | 104
+ 103 | 101
+ 103 | 102
+ 103 | 104
+ 104 | 102
+ 104 | 103
+(10 rows)
+
+Question 3 (i)
+ sid | bid
+-----+-----
+  31 | 103
+(1 row)
+
+Question 3 (j)
+ sid
+-----
+  22
+  64
+  74
+(3 rows)
+
+Question 3 (k)
+ bid
+-----
+ 104
+ 105
+(2 rows)
+
+WARNING: Console code page (437) differs from Windows code page (1252)
+         8-bit characters might not work correctly. See psql reference
+         page "Notes for Windows users" for details.
+You are now connected to database "postgres" as user "postgres".
+
+
+--Drop database created
+DROP DATABASE
+--Drop database created
+DROP DATABASE 

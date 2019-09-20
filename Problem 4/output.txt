@@ -1,0 +1,849 @@
+
+CREATE DATABASE
+
+WARNING: Console code page (437) differs from Windows code page (1252)
+         8-bit characters might not work correctly. See psql reference
+         page "Notes for Windows users" for details.
+You are now connected to database "assignment4" as user "postgres".
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE TABLE
+
+CREATE TABLE
+
+Question 1
+--create insert and delete triggers for the relations:
+--STUDENT - INSERT trigger
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+INSERT 0 1
+INSERT 0 1
+
+ERROR:  Primary Key unique constraint violation- sid already exists
+CONTEXT:  PL/pgSQL function student_constraint_pk() line 4 at RAISE
+
+ERROR:  Primary Key null constraint violation- sid cannot be null
+CONTEXT:  PL/pgSQL function student_constraint_pk() line 6 at RAISE
+
+
+--STUDENT - DELETE
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+--insert test data
+
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+
+ sid | cno
+-----+-----
+   1 | 100
+(1 row)
+
+ sid | cno
+-----+-----
+   1 | 200
+(1 row)
+
+ sid | cno | position
+-----+-----+----------
+   2 | 100 |       10
+(1 row)
+
+-- on deleting from the parent table student, the record is also removed from the child tables by the delete trigger on Student
+DELETE 1
+
+ sid | sname | major
+-----+-------+-------
+   2 | Sam   | CS
+(1 row)
+
+ sid | cno
+-----+-----
+(0 rows)
+
+sid | cno
+-----+-----
+(0 rows)
+
+ sid | cno | position
+-----+-----+----------
+   2 | 100 |       10
+(1 row)
+
+-- delete on the sid not in any of the child tables is also implemented successfully
+
+INSERT 0 1
+
+DELETE 1
+
+sid | sname | major
+-----+-------+-------
+   2 | Sam   | CS
+(1 row)
+
+--COURSE - INSERT:
+CREATE FUNCTION
+
+CREATE TRIGGER
+--set up test data
+INSERT 0 1
+
+INSERT 0 1
+
+cno |  cname   | total | max
+-----+----------+-------+-----
+ 100 | ADC      |    60 |  63
+ 200 | Big Data |    40 |  53
+(2 rows)
+
+INSERT 0 1
+
+INSERT 0 1
+
+INSERT 0 1
+
+ sid |   sname    |   major
+-----+------------+------------
+   2 | Sam        | CS
+   1 | Raji       | CS
+   3 | Tom Riddle | Witchcraft
+(3 rows)
+
+ cno |           cname           | total | max
+-----+---------------------------+-------+-----
+ 100 | ADC                       |    60 |  63
+ 200 | Big Data                  |    40 |  53
+ 300 | Defense against Dark Arts |    80 | 100
+(3 rows)
+
+
+--PK-unique constraint and null constraint violations are handled
+
+ERROR:  Primary Key null constraint violation- cno cannot be null
+CONTEXT:  PL/pgSQL function course_constraint_pk() line 6 at RAISE
+
+ERROR:  Primary Key unique constraint violation- cno already exists
+CONTEXT:  PL/pgSQL function course_constraint_pk() line 4 at RAISE
+
+--COURSE - DELETE:
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+--set up test data
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+
+sid | cno
+-----+-----
+   1 | 100
+(1 row)
+ cno | prereq
+-----+--------
+ 100 |    200
+ 300 |    200
+ 300 |    100
+(3 rows)
+
+sid | cno
+-----+-----
+   1 | 200
+(1 row)
+
+ sid | cno | position
+-----+-----+----------
+   2 | 100 |       10
+   2 | 100 |       10
+(2 rows)
+
+ cno |           cname           | total | max
+-----+---------------------------+-------+-----
+ 100 | ADC                       |    60 |  63
+ 200 | Big Data                  |    40 |  53
+ 300 | Defense against Dark Arts |    80 | 100
+(3 rows)
+
+-- on deleting cno=100 from course, the foreign keys in child tables prerequisite (on cno and prereq columns), hastaken, enroll and waitlist is also deleted:
+
+DELETE 1
+
+ cno |           cname           | total | max
+-----+---------------------------+-------+-----
+ 200 | Big Data                  |    40 |  53
+ 300 | Defense against Dark Arts |    80 | 100
+(2 rows)
+
+ cno | prereq
+-----+--------
+ 300 |    200
+(1 row)
+
+ sid | cno
+-----+-----
+(0 rows)
+
+ sid | cno
+-----+-----
+   1 | 200
+(1 row)
+
+ sid | cno | position
+-----+-----+----------
+(0 rows)
+
+--PREREQUISITE - INSERT:
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+--For reference:
+ cno |           cname           | total | max
+-----+---------------------------+-------+-----
+ 200 | Big Data                  |    40 |  53
+ 300 | Defense against Dark Arts |    80 | 100
+(2 rows)
+
+ sid |   sname    |   major
+-----+------------+------------
+   2 | Sam        | CS
+   1 | Raji       | CS
+   3 | Tom Riddle | Witchcraft
+   
+--error is thrown if value in cno or prereq or both in the newly inserted row is not present in the parent table course:
+
+ERROR:  Foreign Key constraint violation on cno- cno does not exist in parent table course
+CONTEXT:  PL/pgSQL function prerequisite_constraint_fk() line 4 at RAISE
+
+ERROR:  Foreign Key constraint violation on prereq- cno does not exist in parent table course
+CONTEXT:  PL/pgSQL function prerequisite_constraint_fk() line 6 at RAISE
+
+ERROR:  Foreign Key constraint violation on cno- cno does not exist in parent table course
+CONTEXT:  PL/pgSQL function prerequisite_constraint_fk() line 4 at RAISE
+
+--PREREQUISITE - DELETE- No effect needed since there is no PK mentioned explicitly for this table
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+-- HASTAKEN - INSERT:
+
+--error thrown when user tries to insert values in Sid and cno that are not present in the student and course relation respectively:
+
+ERROR:  Foreign Key constraint violation on sid- sid does not exist in parent table student
+CONTEXT:  PL/pgSQL function hastaken_constraint_fk() line 6 at RAISE
+
+ERROR:  Foreign Key constraint violation on cno- cno does not exist in parent table course
+CONTEXT:  PL/pgSQL function hastaken_constraint_fk() line 4 at RAISE
+
+ERROR:  Foreign Key constraint violation on cno- cno does not exist in parent table course
+CONTEXT:  PL/pgSQL function hastaken_constraint_fk() line 4 at RAISE
+
+--HASTAKEN- do not allow delete on hastaken sunce it is table stores history (as mentioned in Piazza by professor):
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+
+-- ENROLL - INSERT:
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+ERROR:  Foreign Key constraint violation on sid - sid does not exist in parent table student
+CONTEXT:  PL/pgSQL function enroll_constraint_fk() line 6 at RAISE
+
+ERROR:  Foreign Key constraint violation on cno - cno does not exist in parent table course
+CONTEXT:  PL/pgSQL function enroll_constraint_fk() line 4 at RAISE
+
+ERROR:  Foreign Key constraint violation on cno - cno does not exist in parent table course
+CONTEXT:  PL/pgSQL function enroll_constraint_fk() line 4 at RAISE
+
+--valid inserts are allowed:
+INSERT 0 1
+
+--ENROLL - DELETE- No effect since there is no PK mentioned explicitly for this table
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+-- WAITLIST - INSERT:
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+--error thrown when user tries to insert values in Sid and cno that are not present in the student and course relation respectively:
+
+ERROR:  Foreign Key constraint violation on sid - sid does not exist in parent table student
+CONTEXT:  PL/pgSQL function waitlist_constraint_fk() line 6 at RAISE
+
+ERROR:  Foreign Key constraint violation on cno - cno does not exist in parent table course
+CONTEXT:  PL/pgSQL function waitlist_constraint_fk() line 4 at RAISE
+
+ERROR:  Foreign Key constraint violation on cno - cno does not exist in parent table course
+CONTEXT:  PL/pgSQL function waitlist_constraint_fk() line 4 at RAISE
+
+--WAITLIST - DELETE- No effect since there is no PK mentioned explicitly for this table
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+Question 2 sub part 1 and 2
+CREATE FUNCTION
+
+CREATE TRIGGER
+-- course 300 is a prerequisite of course 400 and student 1 has taken course 300 only
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+
+ sid | cno
+-----+-----
+   1 | 200
+   2 | 200
+(2 rows)
+
+ cno | prereq
+-----+--------
+ 300 |    200
+ 400 |    300
+(2 rows)
+
+sid | cno
+-----+-----
+   1 | 300
+(1 row)
+
+ cno |           cname           | total | max
+-----+---------------------------+-------+-----
+ 200 | Big Data                  |    40 |  53
+ 300 | Defense against Dark Arts |    80 | 100
+ 400 | ADC                       |     0 |  30
+(3 rows)
+
+--student 1 is enrolled in course 400 since the student has taken prerequisite 300
+
+INSERT 0 1
+
+sid | cno
+-----+-----
+   1 | 200
+   2 | 200
+   1 | 400
+(3 rows)
+
+cno | prereq
+-----+--------
+ 300 |    200
+ 400 |    300
+(2 rows)
+
+ sid | cno
+-----+-----
+   1 | 300
+(1 row)
+
+-- the total count for the course 400 is incremented by 1
+
+ cno |           cname           | total | max
+-----+---------------------------+-------+-----
+ 200 | Big Data                  |    40 |  53
+ 300 | Defense against Dark Arts |    80 | 100
+ 400 | ADC                       |     1 |  30
+(3 rows)
+
+
+ERROR:  Cannot enroll - prerequisites for the course are not taken
+CONTEXT:  PL/pgSQL function enroll_prereq_count() line 4 at RAISE
+
+--add another prerequisite for course 400 , now 400 has 300 and 200 as prerequisite
+
+INSERT 0 1
+
+-- insertion of same record this time leads to error since the student has not taken the course 200.
+ERROR:  Cannot enroll - prerequisites for the course are not taken
+CONTEXT:  PL/pgSQL function enroll_prereq_count() line 4 at RAISE
+
+-- courses without prerequisites (cno 200) are also inserted and total is incremented:
+--please ignore the initial value of 40 for course 200
+
+INSERT 0 1
+
+ cno |           cname           | total | max
+-----+---------------------------+-------+-----
+ 300 | Defense against Dark Arts |    80 | 100
+ 400 | ADC                       |     1 |  30
+ 200 | Big Data                  |    41 |  53
+(3 rows)
+
+--update the course 400 with total=max to test waitlisting
+
+UPDATE 1
+
+ cno |           cname           | total | max
+-----+---------------------------+-------+-----
+ 300 | Defense against Dark Arts |    80 | 100
+ 200 | Big Data                  |    41 |  53
+ 400 | ADC                       |    30 |  30
+(3 rows)
+
+--both students 1  and 2 have the taken the prerequisites 200 and 300 in order to enroll for course 400
+
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+
+sid | cno | position
+-----+-----+----------
+(0 rows)
+
+--course 400 is full (course manually updated before)
+
+NOTICE:  Cannot enroll - class is full, you have been waitlisted
+INSERT 0 0
+
+--hence the student is waitlisted for the course
+
+ sid | cno | position
+-----+-----+----------
+   1 | 400 |        1
+(2 rows)
+
+NOTICE:  Cannot enroll - class is full, you have been waitlisted
+INSERT 0 0
+
+sid | cno | position
+-----+-----+----------
+   1 | 400 |        1
+   2 | 400 |        2
+(3 rows)
+
+--the course total for course 400 is not incremented
+
+ cno |           cname           | total | max
+-----+---------------------------+-------+-----
+ 300 | Defense against Dark Arts |    80 | 100
+ 200 | Big Data                  |    41 |  53
+ 400 | ADC                       |    30 |  30
+ 100 | EDA                       |    20 |  30
+(4 rows)
+
+-- student not enrolled
+ sid | cno
+-----+-----
+   1 | 200
+   2 | 200
+   1 | 200
+   
+--non full courses:
+--the courses that are not full are still inserted in enroll and course has its total incremented:
+INSERT 0 1
+
+--course total incremented:
+ cno |           cname           | total | max
+-----+---------------------------+-------+-----
+ 300 | Defense against Dark Arts |    80 | 100
+ 200 | Big Data                  |    41 |  53
+ 400 | ADC                       |    30 |  30
+ 100 | EDA                       |    21 |  30
+(4 rows)
+
+-- waitlist not changed:
+ sid | cno | position
+-----+-----+----------
+   1 | 400 |        1
+   2 | 400 |        2
+(3 rows)
+
+--student enrolled:
+
+ sid | cno
+-----+-----
+   1 | 200
+   2 | 200
+   1 | 200
+   1 | 100
+(4 rows)
+
+Question 2 sub part 3
+
+--when a student drops course by deleting from the waitlist, the waitlist position of others above that student in that course must reduce
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+--student 3 satisfies the prerequisites for cno 400
+
+INSERT 0 2
+
+NOTICE:  Cannot enroll - class is full, you have been waitlisted
+INSERT 0 0
+
+--student 3 waitlisted 
+
+ sid | cno | position
+-----+-----+----------
+   1 | 400 |        1
+   2 | 400 |        2
+   3 | 400 |        3
+   
+--delete on waitlist for student 2- reduces the position for the student 3 by 1 while postion for student 1 remains the same.
+
+DELETE 1
+
+ sid | cno | position
+-----+-----+----------
+   1 | 400 |        1
+   3 | 400 |        2
+(3 rows)
+
+--if a student drops by deleting from enroll, 
+	--the person at waitlist position 1 for that course must get enrolled
+	--subsequently he must also be removed from the wailtist
+	--the position of other waitlisted students for that course must be reduced by 1 (taken care of by the above trigger for wailtist delete)
+	--if no student on waitlist then total in reduced by 1 for that course
+	
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+--setup test data to test
+UPDATE 1
+INSERT 0 1
+ sid | cno
+-----+-----
+   1 | 200
+   2 | 200
+   1 | 200
+   1 | 100
+   2 | 400
+(5 rows)
+
+ cno |           cname           | total | max
+-----+---------------------------+-------+-----
+ 200 | Big Data                  |    41 |  53
+ 100 | EDA                       |    21 |  30
+ 300 | Defense against Dark Arts |    80 | 100
+ 400 | ADC                       |    30 |  30
+(4 rows)
+
+ sid | cno | position
+-----+-----+----------
+   1 | 400 |        1
+   3 | 400 |        2
+(2 rows)
+
+--delete the enrollment of sid 2 in cno 400
+DELETE 1
+
+--sid 1 at wailtist position 1 is now enrolled in cno 400
+sid | cno
+-----+-----
+   1 | 200
+   2 | 200
+   1 | 200
+   1 | 100
+   1 | 400
+(5 rows)
+
+--sid 3 at wailtist position 2 is now at position 1
+ sid | cno | position
+-----+-----+----------
+   3 | 400 |        1
+(1 row)
+
+--course total is unchanged
+cno |           cname           | total | max
+-----+---------------------------+-------+-----
+ 200 | Big Data                  |    41 |  53
+ 100 | EDA                       |    21 |  30
+ 300 | Defense against Dark Arts |    80 | 100
+ 400 | ADC                       |    30 |  30
+(4 rows)
+
+--set up test case for no waitlist- delete sids for all enrolled students
+DELETE 1
+
+-- on deleting the last enrolled student sid 3
+DELETE 1
+
+sid | cno
+-----+-----
+   1 | 200
+   2 | 200
+   1 | 200
+   1 | 100
+(4 rows)
+
+ sid | cno | position
+-----+-----+----------
+   
+(0 row)
+
+-- the total for the course is reduced by 1
+ cno |           cname           | total | max
+-----+---------------------------+-------+-----
+ 200 | Big Data                  |    41 |  53
+ 100 | EDA                       |    21 |  30
+ 300 | Defense against Dark Arts |    80 | 100
+ 400 | ADC                       |    29 |  30
+(4 rows)
+
+Question 3
+-- create a relation mimicking the materialized view major
+CREATE TABLE
+
+--major must be checked when a new student comes in. Insert if their major is not listed in this view, update if the major is already in the table.
+--technically we do not need insert trigger for student for this since we are having a foreign key to student, a student cannot be enrolled unless they have been recorded in student table, so when a new student comes in , he will not be enrolled just yet, so we handle during inserts to enroll table
+
+--check if any major can now be inserted since the new student who is in the major is now enrolled
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+--if the student in the major is leaving the enrollment table then the count must be reduced 
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+--if a record is deleted from student then count reduced for the respective major - if the student is enrolled (if cascade delete is not allowed this trigger is not applicable)
+
+CREATE FUNCTION
+
+CREATE TRIGGER
+
+--testing
+
+ sid |   sname    |   major
+-----+------------+------------
+   2 | Sam        | CS
+   1 | Raji       | CS
+   3 | Tom Riddle | Witchcraft
+(3 rows)
+
+ sid | cno
+-----+-----
+   1 | 200
+   2 | 200
+   1 | 200
+   1 | 100
+(4 rows)
+
+--initial records in student and enroll have been accounted for in major
+ major | numberofstudents
+-------+------------------
+ CS    |                2
+(1 row)
+
+INSERT 0 1
+
+-- nothing inserted in major since sid 4 is not enrolled yet
+ major | numberofstudents
+-------+------------------
+ CS    |                2
+(1 rows)
+
+INSERT 0 1
+
+--sid 4 is enrolled and major recorded in major table
+
+ sid | cno
+-----+-----
+   1 | 200
+   2 | 200
+   1 | 200
+   1 | 100
+   4 | 100
+(5 rows)
+
+ major | numberofstudents
+-------+------------------
+ CS    |                2
+ HCI   |                1
+(2 rows)
+
+--students enrolls for another course , count remains the same since count keeps track of no. of students
+
+INSERT 0 1
+
+ major | numberofstudents
+-------+------------------
+ CS    |                2
+ HCI   |                1
+(2 rows)
+
+INSERT 0 1
+
+   major    | numberofstudents
+------------+------------------
+ CS         |                2
+ HCI        |                1
+ Witchcraft |                1
+(3 rows)
+
+INSERT 0 1
+
+ sid |    sname    |   major
+-----+-------------+------------
+   2 | Sam         | CS
+   1 | Raji        | CS
+   3 | Tom Riddle  | Witchcraft
+   4 | John        | HCI
+   5 | Akash Sethi | HCI
+(5 rows)
+
+INSERT 0 1
+
+-- count increased by 1 for HCI since sid 5 newly enrolled
+
+   major    | numberofstudents
+------------+------------------
+ CS         |                2
+ Witchcraft |                1
+ HCI        |                2
+(3 rows)
+
+ sid | cno
+-----+-----
+   1 | 200
+   2 | 200
+   1 | 200
+   1 | 100
+   4 | 100
+   4 | 200
+   3 | 100
+   5 | 100
+(8 rows)
+
+DELETE 1
+
+--sid 4 dropped course 4 major count not changed
+
+  major    | numberofstudents
+------------+------------------
+ CS         |                2
+ Witchcraft |                1
+ HCI        |                2
+(3 rows)
+
+--sid 4 drops last course 200, major HCI count reduces by 1
+DELETE 1
+  major    | numberofstudents
+------------+------------------
+ CS         |                2
+ Witchcraft |                1
+ HCI        |                1
+(3 rows)
+
+--records for sid 4 have dropped from enroll as well
+ sid | cno
+-----+-----
+   1 | 100
+   3 | 100
+   5 | 100
+   1 | 200
+   2 | 200
+   1 | 200
+(6 rows)
+
+--last student in the course drops his last and only enrollment, major is dropped:
+DELETE 1
+
+  major    | numberofstudents
+------------+------------------
+ CS         |                2
+ Witchcraft |                1
+(2 rows)
+
+ sid |    sname    |   major
+-----+-------------+------------
+   2 | Sam         | CS
+   1 | Raji        | CS
+   3 | Tom Riddle  | Witchcraft
+   4 | John        | HCI
+   5 | Akash Sethi | HCI
+(5 rows)
+
+-- insert test data
+
+INSERT 0 1
+INSERT 0 1
+
+sid | cno
+-----+-----
+   1 | 100
+   3 | 100
+   1 | 200
+   2 | 200
+   1 | 200
+   4 | 100
+   4 | 200
+(7 rows)
+
+   major    | numberofstudents
+------------+------------------
+ CS         |                2
+ Witchcraft |                1
+ HCI        |                1
+(3 rows)
+
+--sid 5 is not enrolled hence the major count is not reduced since it does not account for that
+
+DELETE 1
+
+ sid |   sname    |   major
+-----+------------+------------
+   2 | Sam        | CS
+   1 | Raji       | CS
+   3 | Tom Riddle | Witchcraft
+   4 | John       | HCI
+   5 | Akash Sethi | HCI
+(5 rows)
+
+   major    | numberofstudents
+------------+------------------
+ CS         |                2
+ Witchcraft |                1
+ HCI        |                1
+(3 rows)
+
+-- sid 4 is enrolled and accounted for in the major count hence on dropping sid 4 his major HCI gets dropped because he is the last student in that major.
+
+DELETE 1
+
+   major    | numberofstudents
+------------+------------------
+ CS         |                2
+ Witchcraft |                1
+(2 rows)
+
+WARNING: Console code page (437) differs from Windows code page (1252)
+         8-bit characters might not work correctly. See psql reference
+         page "Notes for Windows users" for details.
+You are now connected to database "postgres" as user "postgres".
+
+
+DROP DATABASE
+
